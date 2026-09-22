@@ -1,6 +1,8 @@
 import hashlib
 from Bio import SeqIO
 import zlib
+import random
+
 
 # function to read the genome files and return a list of strings (xxx note: maybe we want it as a dictionary, thinking about problem 2)
 # each string should represent one genome 
@@ -20,37 +22,23 @@ import zlib
 #	return listOfStrings
 
 # this reads a chosen fasta file, we add it to our final function
-genomes = {rec.id: str(rec.seq) for rec in SeqIO.parse(file_fasta, "fasta")}
+#genomes = {rec.id: str(rec.seq) for rec in SeqIO.parse(file_fasta, "fasta")}
 
 
 
 # this function takes a string and returns all subsequences of this string with length k
+def kMers(string, k): 
+    listOfKmers = []
+    for i in range(len(string)-k+1):
+        listOfKmers.append(string[i:i+k])
+    return listOfKmers
 
-#def kMers(string, k): 
- #   listOfKmers = []
-  #  for i in range(len(string)-k+1):
-   #     listOfKmers.append(string[i:i+k])
-   # return listOfKmers
 
-#takes a sequence as string and returns all kmers as intergers in a list (xxx i am using zlib here!)
-def get_kmer_ints(sequence,k):
-    kmer_ints =[]
-    
-    #loop through secuenqe and make all kmers
-    for i in range(len(sequence) - k +1):
-        kmer = sequence[i : i+k]
-        
-        # converts the string to a unique 32bit interger
-        kmer_int = zlib.crc32(kmer.encode('utf-8')) 
-        
-        kmer_ints.append(kmer_int)
-    return kmer_ints
+def hash_kmer(kmer, seed):
+  # combines seed and kmer into a deterministic 32-bit integer (0 to 2^32 - 1)
+  hash_input = f"{seed}:{kmer}".encode("utf-8")
+  return int(hashlib.md5(hash_input).hexdigest()[:8], 16)
 
-def
-# function to get m deterministic hash functions with set seeds
-def get_hash_functions(m):
-    # TODO
-    return #list of hash functions
 
 # function to compute the min hash for a given hash function and given set of k_mers
 #def minHashValue(kMers, randomHashfunction):
@@ -65,21 +53,22 @@ def get_hash_functions(m):
    # return minHash
 
 # this function creates a sketch (xxx like shown in the lecture : streaming) from a list of kmers and a list of m different hash functions
-def create_sketch(kMers, hash_functions)
+def create_sketch(sequence, k, m)
     m = len(hash_functions) 
     #start the sketch with m big start values
     sketch = [float("inf")]*m
+    #stream kmers directly from the sequence
+    for i on range(len(sequence)-k+1):
+        kmer = sequence[i:i+k]
+ 
+        #eveluate kmer against all seeds (streaming)
+        for seed in range(m):
+            h_val = hash_kmer(kmer, seed)
+            if h_val < sketch[seed]:
+                sketch[seed] = h_val
+     return sketch
 
-    #goes through one k-mer at the time (streaming)
-    for kmer in kmers:
-        #tests kmer on all m functions
-        for i, h in enumerate(hash_functions):
-            hash_val = h(kmer)
-
-            #save the value if it is the smallest seen so far
-            if hash_val < sketch[i]:
-                sketch[i] = hash_val
-
+ 
 #takes two lists and compares them element to elemnt
 def estimate_jaccard(sketch_A, sketch_B):
     #compares the two sketches, counts how many positions have the same value, divides number of matches with m
@@ -93,6 +82,17 @@ def estimate_jaccard(sketch_A, sketch_B):
 
 # this reads a chosen fasta file, we add it to our final function
 # genomes = {rec.id: str(rec.seq) for rec in SeqIO.parse(file_fasta, "fasta")}
+
+
+
+
+
+
+
+
+
+
+
 
 
 
