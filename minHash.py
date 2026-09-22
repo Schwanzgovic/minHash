@@ -60,7 +60,7 @@ def create_sketch(sequence, k, m):
         #eveluate kmer against all seeds (streaming)
         for seed in range(m): # we always use the same seeds (0,1,2,3,....,m-1)
             h_val = hash_kmer(kmer, seed)
-            if h_val < sketch[seed]:
+            if h_val < sketch[seed]: #MinHash
                 sketch[seed] = h_val
     return sketch
 
@@ -127,6 +127,44 @@ print(dist_matrix, genome_ids)
 
 # this reads a chosen fasta file, we add it to our final function
 #genomes = {rec.id: str(rec.seq) for rec in SeqIO.parse(file_fasta, "fasta")}
+
+
+#PROBLEM: wht k to use
+#takes a list of genomes and returns a "good" k value (3 to 600) XXX I have no idea what a good k value is??
+def get_good_k(genomes):
+	maxlen = 0
+	for i in genomes:
+		if(len(i)>maxlen):
+			maxlen=len(i)
+	#print(int(maxlen/14))
+	k = int(maxlen/14)
+	if(k>600):
+		k=600
+	#print(k)
+	return k
+
+#print(readFileAndReturnStringList('lessontest.txt'))
+#gen = readFileAndReturnStringList("ecoli_20_genomes_short_acc.fa")
+#gen = readFileAndReturnStringList("lessontest.txt")
+gen = readFileAndReturnStringList("test1.fa")
+
+k = get_good_k(gen)
+hashesneeded = 0
+kmers = []
+for i in gen:
+	kmers.append(kMers(i,k))
+for i in kmers:
+	if(len(i)>hashesneeded):
+		hashesneeded=len(i)
+h = get_hash_functions(hashesneeded)
+#print(kmers[0])
+#create_sketch(kmers[0],h)
+sketches = []
+for i in range(len(gen)):
+	#print(kmers[i])
+	sketches.append(create_sketch(kmers[i],h))
+
+
 
 
 
