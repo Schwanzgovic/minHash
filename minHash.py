@@ -52,13 +52,14 @@ def hash_kmer(kmer, seed):
       #      minHash = newValue
    # return minHash
 
+
 # this function creates a sketch (xxx like shown in the lecture : streaming) from a list of kmers and a list of m different hash functions
-def create_sketch(sequence, k, m)
-    m = len(hash_functions) 
+def create_sketch(sequence, k, m):
+    m = len(m) 
     #start the sketch with m big start values
     sketch = [float("inf")]*m
     #stream kmers directly from the sequence
-    for i on range(len(sequence)-k+1):
+    for i in range(len(sequence)-k+1):
         kmer = sequence[i:i+k]
  
         #eveluate kmer against all seeds (streaming)
@@ -66,7 +67,7 @@ def create_sketch(sequence, k, m)
             h_val = hash_kmer(kmer, seed)
             if h_val < sketch[seed]:
                 sketch[seed] = h_val
-     return sketch
+    return sketch
 
  
 #takes two lists and compares them element to elemnt
