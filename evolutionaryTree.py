@@ -5,32 +5,6 @@ import random
 import numpy as np
 
 
-# function to read the genome files and return a list of strings (xxx note: maybe we want it as a dictionary, thinking about problem 2)
-# each string should represent one genome 
-
-#def readFileAndReturnStringList(filename):
-#    listOfStrings = []
-#    string = ""
-#	with open(filename, 'r') as file:
-#		for line in file:
-#			if(line[0]=='>' and string != ''):
-#				listOfStrings.append(string)
-#				string=""
-#			else:
-#				if(line[0]!='>'):
-#					string += line.strip()
-#	listOfStrings.append(string)
-#	return listOfStrings
-
-
-# this function takes a string and returns all subsequences of this string with length k
-#def kMers(string, k): 
- #   listOfKmers = []
-  #  for i in range(len(string)-k+1):
-   #     listOfKmers.append(string[i:i+k])
-    #return listOfKmers
-
-
 def hash_kmer(kmer, seed):
   # combines seed and kmer into a deterministic 32-bit integer (0 to 2^32 - 1)
   # N: but it is pseudo random?
@@ -38,18 +12,6 @@ def hash_kmer(kmer, seed):
   # is this pseudo random?
   return int(hashlib.md5(hash_input).hexdigest()[:8], 16)
 
-
-# function to compute the min hash for a given hash function and given set of k_mers
-#def minHashValue(kMers, randomHashfunction):
-    # initialize old value with the hash value of the first k-mer
-#    minHash = randomHashfunction(kMers[0])
- #   for kMer in kMers:
-  #      newValue = randomHashfunction(kMer)
-   #     if minHash > newValue: # xxx i think it should be < but not sure so i keep it as a comment
-    #        continue
-     #   else: 
-      #      minHash = newValue
-   # return minHash
 
 
 # this function creates a sketch (xxx like shown in the lecture : streaming) from a list of kmers and a list of m different hash functions
@@ -104,14 +66,35 @@ def create_distance_martix(sketches):
             matrix[i,j] = dist
             matrix[j,i] = dist
     return matrix, genome_ids
+
+# find the root of the tree 
+# the idea is to take the avergae distance to all other nodes. The root should have the shortest one
+# this function returns the id of the genome which most likely is the root 
+def findRoot(averageDistances, genomeIDs):
+     # get minimal index 
+     minIndex = np.argmin(averageDistances)
+     return genomeIDs[minIndex]
+
+
+# function to compute the average distances between each genome and all others
+def computeAverageDistances(dist_matrix):
+    n = len(dist_matrix[0][:])
+    averageDistances = np.zeros(n)
+    for i in range(n): 
+        sum = 0
+        for j in range(n):
+            if i!=j:
+                sum += dist_matrix[i][j]
+        averageDistances[i] = sum/(n-1)
+    return averageDistances
     
 #Solves problem 1    
 # 1. read all genomes from FASTA-file
-genomes = {rec.id: str(rec.seq) for rec in SeqIO.parse("test3.fa", "fasta")} #change "test3.fa" to wanted file
+genomes = {rec.id: str(rec.seq) for rec in SeqIO.parse("test1.fa", "fasta")} #change "test3.fa" to wanted file
 
 # 2. choose parameters
 k = 21  # standard for bacteria (i googled, but we might want to play around with it and find a justification)
-m = 100  # number of hash functions / seeds (N: can be pretty high for "test1.fa")
+m = 1000  # number of hash functions / seeds (N: can be pretty high for "test1.fa")
 
 # 3. create sketches-dictionary
 sketches = {}
@@ -124,66 +107,9 @@ print(f"Created {len(sketches)} sketches") # xxx just to check we can remove lat
 
 dist_matrix, genome_ids = create_distance_martix(sketches) 
 
-print("Distance matrix: ", "\n", dist_matrix,"\n", "Genomde IDs: ", "\n", genome_ids)   
-# this reads a chosen fasta file, we add it to our final function
-# genomes = {rec.id: str(rec.seq) for rec in SeqIO.parse(file_fasta, "fasta")}
+print("Distance matrix: ", "\n", dist_matrix,"\n", "Genomde IDs: ", "\n", genome_ids)
 
-
-
-
-# this reads a chosen fasta file, we add it to our final function
-#genomes = {rec.id: str(rec.seq) for rec in SeqIO.parse(file_fasta, "fasta")}
-
-
-#PROBLEM: wht k to use
-#takes a list of genomes and returns a "good" k value (3 to 600) XXX I have no idea what a good k value is??
-def get_good_k(genomes):
-	maxlen = 0
-	for i in genomes:
-		if(len(i)>maxlen):
-			maxlen=len(i)
-	#print(int(maxlen/14))
-	k = int(maxlen/14)
-	if(k>600):
-		k=600
-	#print(k)
-	return k
-'''
-#print(readFileAndReturnStringList('lessontest.txt'))
-#gen = readFileAndReturnStringList("ecoli_20_genomes_short_acc.fa")
-#gen = readFileAndReturnStringList("lessontest.txt")
-gen = readFileAndReturnStringList("test1.fa")
-
-k = get_good_k(gen)
-hashesneeded = 0
-kmers = []
-for i in gen:
-	kmers.append(kMers(i,k))
-for i in kmers:
-	if(len(i)>hashesneeded):
-		hashesneeded=len(i)
-h = get_hash_functions(hashesneeded)
-#print(kmers[0])
-#create_sketch(kmers[0],h)
-sketches = []
-for i in range(len(gen)):
-	#print(kmers[i])
-	sketches.append(create_sketch(kmers[i],h))
-'''
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+averageDistancesToAllOtherNodes = computeAverageDistances(dist_matrix)
+print("average Distances: ", averageDistancesToAllOtherNodes)
+print("Found root: ", findRoot(averageDistancesToAllOtherNodes, genome_ids))
 

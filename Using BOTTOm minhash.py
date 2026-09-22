@@ -82,6 +82,6 @@ print(f"Created {len(sketches)} sketches") # xxx just to check we can remove lat
 #print(sketches)
 dist_matrix, genome_ids = create_distance_martix(sketches) 
 
-print(dist_matrix, genome_ids)   
+print("Distance matrix: ", "\n", dist_matrix,"\n", "Genomde IDs: ", "\n", genome_ids)  
     
 
