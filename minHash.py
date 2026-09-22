@@ -21,10 +21,6 @@ import random
 #	listOfStrings.append(string)
 #	return listOfStrings
 
-# this reads a chosen fasta file, we add it to our final function
-#genomes = {rec.id: str(rec.seq) for rec in SeqIO.parse(file_fasta, "fasta")}
-
-
 
 # this function takes a string and returns all subsequences of this string with length k
 #def kMers(string, k): 
@@ -82,13 +78,55 @@ def estimate_jaccard(sketch_A, sketch_B):
 		if(sketch_A[i]==sketch_B[i]):
 			match=match+1
 	return float(match/len(sketch_A))
-# xxx i dont know if we want to do the gonomic distance as a seperate function or combine it with the jaccard
 
 
+#takes a dict of sketches
+#calculates a NxN distance (1-Jaccard) as a numpy-array
+def create_distance_martix(sketches):
+    genome_ids = list(sketches.keys())
+    N = len(genome_ids)
+    
+    matrix = np.zeros((N,N))
+    
+    #calc all pairwise distances
+    for i in range(N):
+        for j in range(i+1,N):
+            sim = estimate_jaccard(sketches[genome_ids[i]], sketches[genome_ids[j]])
+            dist = 1 - sim
+            
+            # since matrix is symmetric
+            matrix[i,j] = dist
+            matrix[j,i] = dist
+    return matrix, genome_ids
+    
+#Solves problem 1    
+# 1. read all genomes from FASTA-file
+genomes = {rec.id: str(rec.seq) for rec in SeqIO.parse("test3.fa", "fasta")} #change "test3.fa" to wanted file
+
+# 2. choose parameters
+k = 21  # standard for bacteria (i googled, but we might want to play around with it and find a justification)
+m = 100  # number of hash functions / seeds
+
+# 3. create sketches-dictionary
+sketches = {}
+
+for genome_id, sequence in genomes.items():
+  # calls create_sketch-function for every genom
+  sketches[genome_id] = create_sketch(sequence, k, m)
+
+print(f"Created {len(sketches)} sketches") # xxx just to check we can remove later.
+
+dist_matrix, genome_ids = create_distance_martix(sketches) 
+
+print(dist_matrix, genome_ids)   
 # this reads a chosen fasta file, we add it to our final function
 # genomes = {rec.id: str(rec.seq) for rec in SeqIO.parse(file_fasta, "fasta")}
 
 
+
+
+# this reads a chosen fasta file, we add it to our final function
+#genomes = {rec.id: str(rec.seq) for rec in SeqIO.parse(file_fasta, "fasta")}
 
 
 
