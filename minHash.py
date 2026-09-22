@@ -1,5 +1,6 @@
 import hashlib
 from Bio import SeqIO
+import zlib
 
 # function to read the genome files and return a list of strings (xxx note: maybe we want it as a dictionary, thinking about problem 2)
 # each string should represent one genome 
