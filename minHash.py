@@ -2,6 +2,7 @@ import hashlib
 from Bio import SeqIO
 import zlib
 import random
+import numpy as np
 
 
 # function to read the genome files and return a list of strings (xxx note: maybe we want it as a dictionary, thinking about problem 2)
@@ -106,11 +107,11 @@ def create_distance_martix(sketches):
     
 #Solves problem 1    
 # 1. read all genomes from FASTA-file
-genomes = {rec.id: str(rec.seq) for rec in SeqIO.parse("test3.fa", "fasta")} #change "test3.fa" to wanted file
+genomes = {rec.id: str(rec.seq) for rec in SeqIO.parse("test1.fa", "fasta")} #change "test3.fa" to wanted file
 
 # 2. choose parameters
 k = 21  # standard for bacteria (i googled, but we might want to play around with it and find a justification)
-m = 100  # number of hash functions / seeds
+m = 10000  # number of hash functions / seeds (N: can be pretty high for "test1.fa")
 
 # 3. create sketches-dictionary
 sketches = {}
@@ -123,7 +124,7 @@ print(f"Created {len(sketches)} sketches") # xxx just to check we can remove lat
 
 dist_matrix, genome_ids = create_distance_martix(sketches) 
 
-print(dist_matrix, genome_ids)   
+print("Distance matrix: ", "\n", dist_matrix,"\n", "Genomde IDs: ", "\n", genome_ids)   
 # this reads a chosen fasta file, we add it to our final function
 # genomes = {rec.id: str(rec.seq) for rec in SeqIO.parse(file_fasta, "fasta")}
 
@@ -147,7 +148,7 @@ def get_good_k(genomes):
 		k=600
 	#print(k)
 	return k
-
+'''
 #print(readFileAndReturnStringList('lessontest.txt'))
 #gen = readFileAndReturnStringList("ecoli_20_genomes_short_acc.fa")
 #gen = readFileAndReturnStringList("lessontest.txt")
@@ -168,7 +169,7 @@ sketches = []
 for i in range(len(gen)):
 	#print(kmers[i])
 	sketches.append(create_sketch(kmers[i],h))
-
+'''
 
 
 
