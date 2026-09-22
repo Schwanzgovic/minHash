@@ -32,7 +32,9 @@ import random
 
 def hash_kmer(kmer, seed):
   # combines seed and kmer into a deterministic 32-bit integer (0 to 2^32 - 1)
+  # N: but it is pseudo random?
   hash_input = f"{seed}:{kmer}".encode("utf-8")
+  # is this pseudo random?
   return int(hashlib.md5(hash_input).hexdigest()[:8], 16)
 
 
@@ -52,6 +54,8 @@ def hash_kmer(kmer, seed):
 # this function creates a sketch (xxx like shown in the lecture : streaming) from a list of kmers and a list of m different hash functions
 def create_sketch(sequence, k, m):
     #start the sketch with m big start values
+    # N: is it guaranteed here that our hash-values will be lower then this big number??
+    # N: since we take 
     sketch = [float("inf")]*m
     #stream kmers directly from the sequence
     for i in range(len(sequence)-k+1):
@@ -59,8 +63,9 @@ def create_sketch(sequence, k, m):
  
         #eveluate kmer against all seeds (streaming)
         for seed in range(m): # we always use the same seeds (0,1,2,3,....,m-1)
-            h_val = hash_kmer(kmer, seed)
-            if h_val < sketch[seed]:
+            h_val = hash_kmer(kmer, seed) # N: note that the seeds here are a hash function
+            if h_val < sketch[seed]: # N: compare with the hash value from previous k-mer with same hash-function 
+
                 sketch[seed] = h_val
     return sketch
 
