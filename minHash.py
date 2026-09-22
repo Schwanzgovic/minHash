@@ -27,11 +27,11 @@ import random
 
 
 # this function takes a string and returns all subsequences of this string with length k
-def kMers(string, k): 
-    listOfKmers = []
-    for i in range(len(string)-k+1):
-        listOfKmers.append(string[i:i+k])
-    return listOfKmers
+#def kMers(string, k): 
+ #   listOfKmers = []
+  #  for i in range(len(string)-k+1):
+   #     listOfKmers.append(string[i:i+k])
+    #return listOfKmers
 
 
 def hash_kmer(kmer, seed):
@@ -62,7 +62,7 @@ def create_sketch(sequence, k, m)
         kmer = sequence[i:i+k]
  
         #eveluate kmer against all seeds (streaming)
-        for seed in range(m):
+        for seed in range(m): # we always use the same seeds (0,1,2,3,....,m-1)
             h_val = hash_kmer(kmer, seed)
             if h_val < sketch[seed]:
                 sketch[seed] = h_val
@@ -71,14 +71,19 @@ def create_sketch(sequence, k, m)
  
 #takes two lists and compares them element to elemnt
 def estimate_jaccard(sketch_A, sketch_B):
-    #compares the two sketches, counts how many positions have the same value, divides number of matches with m
-    #to give an estimat J(A,B)
+	#compares the two sketches, counts how many positions have the same value, divides number of matches with m
+	#to give an estimate J(A,B)
 
-    # TODO
-    return jaccard_value
-
-
+	# TODO
+	#print(sketch_A)
+	#print(sketch_B)
+	match = 0
+	for i in range(len(sketch_A)):
+		if(sketch_A[i]==sketch_B[i]):
+			match=match+1
+	return float(match/len(sketch_A))
 # xxx i dont know if we want to do the gonomic distance as a seperate function or combine it with the jaccard
+
 
 # this reads a chosen fasta file, we add it to our final function
 # genomes = {rec.id: str(rec.seq) for rec in SeqIO.parse(file_fasta, "fasta")}
