@@ -61,7 +61,17 @@ def create_distance_martix(sketches):
     
     return matrix, genome_ids
     
- 
+#Solves problem 1    
+# 1. read all genomes from FASTA-file
+genomes = {rec.id: str(rec.seq) for rec in SeqIO.parse("test3.fa", "fasta")} #change "test3.fa" to wanted file
+
+# 2. choose parameters
+k = 21  # standard for bacteria (i googled, but we might want to play around with it and find a justification)
+m = 100  # number of hash functions / seeds
+
+# 3. create sketches-dictionary
+sketches = {}
+
 
 for genome_id, sequence in genomes.items():
   # calls create_sketch-function for every genom
