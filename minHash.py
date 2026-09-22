@@ -55,7 +55,6 @@ def hash_kmer(kmer, seed):
 
 # this function creates a sketch (xxx like shown in the lecture : streaming) from a list of kmers and a list of m different hash functions
 def create_sketch(sequence, k, m):
-    m = len(m) 
     #start the sketch with m big start values
     sketch = [float("inf")]*m
     #stream kmers directly from the sequence
