@@ -83,5 +83,31 @@ print(f"Created {len(sketches)} sketches") # xxx just to check we can remove lat
 dist_matrix, genome_ids = create_distance_martix(sketches) 
 
 print("Distance matrix: ", "\n", dist_matrix,"\n", "Genomde IDs: ", "\n", genome_ids)  
+
+
+
+
+
+
+
+# (i, j) is the pair with the minimum distance (with i < j)
+# identify all remaining indices k (excluding i and j)
+def update_matrix(matrix, i, j):
+    remaining = [k for k in range(len(matrix)) if k != i and k != j]
+    print(remaining)
+    # compute the new row of distances from merged node (i,j) to each remaining node k
+    new_row = [(matrix[i][k] + matrix[j][k]) / 2.0 for k in remaining]
+
+# 4. Rebuild the distance matrix
+    new_matrix = []
+    for r_idx, r in enumerate(remaining):
+    # Keep existing distances between remaining nodes
+        row = [matrix[r][c] for c in remaining]
+        # Add distance to the new merged node
+        row.append(new_row[r_idx])
+        new_matrix.append(row)
+    # Add the final row for the new merged node itself (distance to self = 2.0)
+    new_matrix.append(new_row + [2.0])
+    return np.array(new_matrix)
     
 
