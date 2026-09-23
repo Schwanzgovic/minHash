@@ -91,12 +91,12 @@ def computeAverageDistances(dist_matrix):
 # replaces every entry on and below the diagonal with a two
 # this code assumes an n x n matrix (square)
 def lowerTriangleTwos(matrix):
-    lowerTriangularTwoMatrix = matrix
+    lowerTriangularTwoMatrix = matrix.copy()
     n = matrix.shape[0]
     for i in range(n):
         for j in range(i+1):
-           matrix[i][j] = 2 
-    return np.array(lowerTriangularTwoMatrix)
+           lowerTriangularTwoMatrix[i][j] = 2 
+    return lowerTriangularTwoMatrix
 
 # finds the indices of a matrix where the matrix has a minimal value
 def findMinimumIndicesOfMatrix(matrix):
@@ -112,6 +112,7 @@ def findMinimumIndicesOfMatrix(matrix):
             rowIndex = i
     return rowIndex, columnIndex
 
+'''
 # estimates the distances from the parent node to all other nodes by taking the average distances of its children
 
 def estimateParentDistances(distanceMatrix, minIndexA, minIndexB):
@@ -127,39 +128,31 @@ def estimateParentDistances(distanceMatrix, minIndexA, minIndexB):
             parentDistances[k] = (distanceMatrix[k][minIndexA] + distanceMatrix[minIndexB])/2
         
     return parentDistances        
+'''
 
-def updateDistanceMatrix(distanceMatrix, minIndexA, minIndexB):
-    n = distanceMatrix.shape[0]
-    updateMatrix = np.ones((n-1, n-1))
-    minAB = min(minIndexA, minIndexB)
-    maxAB = max(minIndexA, minIndexB)
-    # TODO
-    for i in range(n-1):
-        for j in range(n-1):
-            if i < minAB and j < minAB:
-                updateMatrix[i][j] = distanceMatrix[i][j]
+# (i, j) is the pair with the minimum distance (with i < j)
+# identify all remaining indices k (excluding i and j)
+def update_matrix(matrix, minIndexA, minIndexB):
 
-            elif i != minAB and j == minAB:
-                # for the first of the two indices, put the parent node (or ancestor here)
-                # we estimate it's distances to all other nodes by taking the average of the children
-                updateMatrix[i][j] = (distanceMatrix[i][j] + distanceMatrix[i][maxAB])/2
-            elif i == minAB and j != minAB:
-                updateMatrix[i][j] = 1
-            elif i < maxAB and j < maxAB:
-                # when both indices are between the minIndexA and minIndexB just copy the entries
-                updateMatrix[i][j] = distanceMatrix[i][j]
+    # making sure i < j:
+    i = min(minIndexA, minIndexB)
+    j = max(minIndexA, minIndexB)
+    remaining = [k for k in range(len(matrix)) if k != i and k != j]
+    print(remaining)
+    # compute the new row of distances from merged node (i,j) to each remaining node k
+    new_row = [(matrix[i][k] + matrix[j][k]) / 2.0 for k in remaining]
 
-            elif i < maxAB and j >= maxAB:
-                # skip the maxAB column
-                updateMatrix[i][j] = distanceMatrix[i][j+1]
-            elif i >= maxAB and j < maxAB:
-                # skip the maxAB row
-                updateMatrix[i][j] = distanceMatrix[i+1][j]
-            else:
-                # skip the maxAB row and maxAB column
-                updateMatrix[i][j] = distanceMatrix[i+1][j+1]
-
-    return updateMatrix
+# 4. Rebuild the distance matrix
+    new_matrix = []
+    for r_idx, r in enumerate(remaining):
+    # Keep existing distances between remaining nodes
+        row = [matrix[r][c] for c in remaining]
+        # Add distance to the new merged node
+        row.append(new_row[r_idx])
+        new_matrix.append(row)
+    # Add the final row for the new merged node itself (distance to self = 2.0)
+    new_matrix.append(new_row + [2.0])
+    return np.array(new_matrix)
 
  
 # function to build the evolutionary tree. It returns an array which satisfies if paranet is at array[n]
@@ -167,18 +160,28 @@ def updateDistanceMatrix(distanceMatrix, minIndexA, minIndexB):
 def constructEvolutionaryTree(distance_matrix, genome_IDS):
     n = len(genome_IDS)
     # returns the upper triangle of matrix and cuts out the zeros (also cuts out the doubled distances)
-    updatedMatrix = lowerTriangleTwos(distance_matrix)
+    updatedMatrixForIndexSearch = lowerTriangleTwos(distance_matrix)
+    updateMatrix = distance_matrix.copy()
     evolutionaryTree = []
+    treeIDs = genome_IDS.copy()
     # the loop has to run exactly n-2 times
     for k in range(n-1): 
-        minIndexA, minIndexB = findMinimumIndicesOfMatrix(updatedMatrix)
-        updatedMatrix = updateDistanceMatrix(updatedMatrix, minIndexA, minIndexB)
-
+        minIndexA, minIndexB = findMinimumIndicesOfMatrix(updatedMatrixForIndexSearch)
+        updateMatrix = update_matrix(updateMatrix, minIndexA, minIndexB)
+        updatedMatrixForIndexSearch = lowerTriangleTwos(updateMatrix)
+        i = min(minIndexA, minIndexB)
+        j = max(minIndexA, minIndexB)
+        
         parentNode = chr(65 + k)
-        childOne = genome_IDS(minIndexA)
-        childTwo = genome_IDS(minIndexB)
+        
+        childOne = treeIDs[i]
+        childTwo = treeIDs[j]
+        
         evolutionaryTree.append([parentNode, childOne, childTwo])
-
+        # update the tree IDs
+        treeIDs[i] = parentNode
+        # remove the bigger index from the list 
+        treeIDs.remove(childTwo)
     return evolutionaryTree
 #Solves problem 1    
 # 1. read all genomes from FASTA-file
@@ -195,19 +198,24 @@ for genome_id, sequence in genomes.items():
   # calls create_sketch-function for every genom
   sketches[genome_id] = create_sketch(sequence, k, m)
 
-print(f"Created {len(sketches)} sketches") # xxx just to check we can remove later.
+#print(f"Created {len(sketches)} sketches") # xxx just to check we can remove later.
 
 dist_matrix, genome_ids = create_distance_martix(sketches) 
 
+evolutionaryTree = constructEvolutionaryTree(dist_matrix, genome_ids)
+
+
 print("Distance matrix: ", "\n", dist_matrix,"\n", "Genomde IDs: ", "\n", genome_ids)
+print("evolution tree: ", "\n", evolutionaryTree)
 triangularMatrix = lowerTriangleTwos(dist_matrix)
 minIndexRow, minIndexColumn = findMinimumIndicesOfMatrix(triangularMatrix)
-
-updateMatrix = updateDistanceMatrix(dist_matrix, minIndexRow, minIndexColumn)
+#print("Distance matrix: ", "\n", dist_matrix,"\n", "Genomde IDs: ", "\n", genome_ids)
+updateMatrix = update_matrix(dist_matrix, minIndexRow, minIndexColumn)
 averageDistancesToAllOtherNodes = computeAverageDistances(dist_matrix)
-parentDistances = estimateParentDistances(dist_matrix, minIndexRow, minIndexColumn)
+#parentDistances = estimateParentDistances(dist_matrix, minIndexRow, minIndexColumn)
 #print("average Distances: ", averageDistancesToAllOtherNodes)
-print("Upper traingle of matrix: ", "\n", triangularMatrix)
-print("Min Index of upper triangle: ", minIndexRow, " ", minIndexColumn)
-print("Distances for the parent node: ", "\n", parentDistances)
+#print("Upper traingle of matrix: ", "\n", triangularMatrix)
+#print("Min Index of upper triangle: ", minIndexRow, " ", minIndexColumn)
+#print("Updated matrix: ", "\n", updateMatrix)
+#print("Distances for the parent node: ", "\n", parentDistances)
 #print("And finally the updated Matrix: ", "\n", updateMatrix)
