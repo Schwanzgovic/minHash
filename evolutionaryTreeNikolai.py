@@ -164,7 +164,7 @@ def constructEvolutionaryTree(distance_matrix, genome_IDS):
     updateMatrix = distance_matrix.copy()
     evolutionaryTree = []
     treeIDs = genome_IDS.copy()
-    # the loop has to run exactly n-2 times
+    # the loop has to run exactly n-1 times
     for k in range(n-1): 
         minIndexA, minIndexB = findMinimumIndicesOfMatrix(updatedMatrixForIndexSearch)
         updateMatrix = update_matrix(updateMatrix, minIndexA, minIndexB)
@@ -185,7 +185,7 @@ def constructEvolutionaryTree(distance_matrix, genome_IDS):
     return evolutionaryTree
 #Solves problem 1    
 # 1. read all genomes from FASTA-file
-genomes = {rec.id: str(rec.seq) for rec in SeqIO.parse("test1.fa", "fasta")} #change "test3.fa" to wanted file
+genomes = {rec.id: str(rec.seq) for rec in SeqIO.parse("test2.fa", "fasta")} #change "test3.fa" to wanted file
 
 # 2. choose parameters
 k = 21  # standard for bacteria (i googled, but we might want to play around with it and find a justification)
