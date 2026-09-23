@@ -1,7 +1,5 @@
 from Bio import SeqIO
 import zlib
-import hashlib
-import random
 import numpy as np
 
 
