@@ -140,7 +140,7 @@ def constructEvolutionaryTree(distance_matrix, genome_IDS):
         treeIDs.remove(childTwo)
     return evolutionaryTree
     
-#Solves problem 1    
+#Solves Task 1    
 # 1. read all genomes from FASTA-file
 genomes = {rec.id: str(rec.seq) for rec in SeqIO.parse("ecoli_20_genomes_short_acc.fa", "fasta")} #change "test3.fa" to wanted file
 
@@ -150,23 +150,19 @@ m = 100  # number of hash functions / seeds
 
 # 3. create sketches-dictionary
 sketches = {}
-
-
 for genome_id, sequence in genomes.items():
   # calls create_sketch-function for every genom
   sketches[genome_id] = create_bottom_sketch(sequence, k, m)
 
 print(f"Created {len(sketches)} sketches") # xxx just to check we can remove later.
-
 #print(sketches)
 dist_matrix, genome_ids = create_distance_martix(sketches) 
 
 print("Distance matrix: ", "\n", dist_matrix,"\n", "Genomde IDs: ", "\n", genome_ids)  
 
+
+#Solves Task 2
 evolutionaryTree = constructEvolutionaryTree(dist_matrix, genome_ids)
-
-
-
 print("evolution tree: ", "\n", evolutionaryTree)
 
 
