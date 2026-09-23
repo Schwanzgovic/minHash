@@ -63,6 +63,7 @@ def create_distance_martix(sketches):
 
 # replaces every entry on and below the diagonal with a two
 # this code assumes an n x n matrix (square)
+# this is to make sure that there is only one unique minimal distance
 def lowerTriangleTwos(matrix):
     lowerTriangularTwoMatrix = matrix.copy()
     n = matrix.shape[0]
@@ -74,18 +75,29 @@ def lowerTriangleTwos(matrix):
 # finds the indices of a matrix where the matrix has a minimal value
 def findMinimumIndicesOfMatrix(matrix):
     n = matrix.shape[0]
+
+    # initialize column and rowIndex and the ol minimum with the minimum from the first row
     oldMin = matrix[0][np.argmin(matrix[0])]
     columnIndex = np.argmin(matrix[0])
     rowIndex = 0
+
+    # loop throug the rows of the matrix
     for i in range(n):
+        # assign minimal value of that row and safe the its index
         newMinIndex = np.argmin(matrix[i])
         newMin = matrix[i][newMinIndex]
         if newMin < oldMin:
+            # if the minimum of the current row is smaller then the old one
+            # update row and column index
             columnIndex = newMinIndex
             rowIndex = i
     return rowIndex, columnIndex
 
 
+# this function takes a distance matrix and a row and colum index 
+# which correspnd to two indices of genomes in the genomeID list
+# we pick the lower one of these indices and replace it by the common parent of the two
+# the higher one gets deleted (so both its distance row and column!)
 # (i, j) is the pair with the minimum distance (with i < j)
 # identify all remaining indices k (excluding i and j)
 def update_matrix(matrix, minIndexA, minIndexB):
@@ -111,28 +123,43 @@ def update_matrix(matrix, minIndexA, minIndexB):
     return np.array(new_matrix)
 
  
-# function to build the evolutionary tree. It returns an array which satisfies if paranet is at array[n]
-# then array[2n+1] and array[2n+2] are its children
+# function to build the evolutionary tree. 
+# It returns an array of the form [[parent1, child11, child12], [parent2, child21, child22], ...]
+# from this list, the tree can be constructed bottom-up by going through the list from left to right and 
+# an assigning the parent to the two children
 def constructEvolutionaryTree(distance_matrix, genome_IDS):
     n = len(genome_IDS)
-    # returns the upper triangle of matrix and cuts out the zeros (also cuts out the doubled distances)
+    # initilize updateMatrixForIndexSearch and the updateMatrix (which is the updated distance matrix)
     updatedMatrixForIndexSearch = lowerTriangleTwos(distance_matrix)
     updateMatrix = distance_matrix.copy()
+    # initialize the evolution tree as empty list 
     evolutionaryTree = []
+    # copy the genome IDs and make sure the mainupalion of the does not affect the original IDs
     treeIDs = genome_IDS.copy()
     # the loop has to run exactly n-1 times
+    # since exactly n-1 parents can be found, where the n-1th is the root 
     for k in range(n-1): 
+        # extract the indices corresponding to the minimum distance for an unspecified genome A and genome B 
         minIndexA, minIndexB = findMinimumIndicesOfMatrix(updatedMatrixForIndexSearch)
+        # update the distance matrixwith these indices
         updateMatrix = update_matrix(updateMatrix, minIndexA, minIndexB)
+        # take the now updated distance matrix and make it ready for the next index search
         updatedMatrixForIndexSearch = lowerTriangleTwos(updateMatrix)
+
+        # assign the smaller index to i
         i = min(minIndexA, minIndexB)
+        # and the bigger index to j
         j = max(minIndexA, minIndexB)
-        
+
+        # the "parent" nodes (or genomes) are identified by increasing ascii symbolds starting from 'A'
         parentNode = chr(65 + k)
-        
+
+        # extract the childs from the tree ID list (note that we do not use the genome ID list here
+        # since it also needs to contain the added parents)
         childOne = treeIDs[i]
         childTwo = treeIDs[j]
-        
+
+        # add the [parent, child1, child2] triple to the evolution tree
         evolutionaryTree.append([parentNode, childOne, childTwo])
         # update the tree IDs
         treeIDs[i] = parentNode
@@ -163,10 +190,11 @@ dist_matrix, genome_ids = create_distance_martix(sketches)
 
 print("Distance matrix: ", "\n", dist_matrix,"\n", "Genomde IDs: ", "\n", genome_ids)  
 
+#creates the evolution tree from the function
 evolutionaryTree = constructEvolutionaryTree(dist_matrix, genome_ids)
 
 
-
+# plots the list, which remember can be built bottom up
 print("evolution tree: ", "\n", evolutionaryTree)
 
 
