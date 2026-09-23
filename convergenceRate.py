@@ -1,3 +1,6 @@
+# this is a try to estimate the convergence rate with increasing k. 
+# but since its not really demanded by the exercise do this only after all tasks are done
+
 import hashlib
 from Bio import SeqIO
 import zlib
@@ -66,35 +69,14 @@ def create_distance_martix(sketches):
             matrix[i,j] = dist
             matrix[j,i] = dist
     return matrix, genome_ids
-
-# find the root of the tree 
-# the idea is to take the avergae distance to all other nodes. The root should have the shortest one
-# this function returns the id of the genome which most likely is the root 
-def findRoot(averageDistances, genomeIDs):
-     # get minimal index 
-     minIndex = np.argmin(averageDistances)
-     return genomeIDs[minIndex]
-
-
-# function to compute the average distances between each genome and all others
-def computeAverageDistances(dist_matrix):
-    n = len(dist_matrix[0][:])
-    averageDistances = np.zeros(n)
-    for i in range(n): 
-        sum = 0
-        for j in range(n):
-            if i!=j:
-                sum += dist_matrix[i][j]
-        averageDistances[i] = sum/(n-1)
-    return averageDistances
     
 #Solves problem 1    
 # 1. read all genomes from FASTA-file
-genomes = {rec.id: str(rec.seq) for rec in SeqIO.parse("test3.fa", "fasta")} #change "test3.fa" to wanted file
+genomes = {rec.id: str(rec.seq) for rec in SeqIO.parse("test1.fa", "fasta")} #change "test3.fa" to wanted file
 
 # 2. choose parameters
 k = 21  # standard for bacteria (i googled, but we might want to play around with it and find a justification)
-m = 1000  # number of hash functions / seeds (N: can be pretty high for "test1.fa")
+m = 100  # number of hash functions / seeds (N: can be pretty high for "test1.fa")
 
 # 3. create sketches-dictionary
 sketches = {}
@@ -107,9 +89,6 @@ print(f"Created {len(sketches)} sketches") # xxx just to check we can remove lat
 
 dist_matrix, genome_ids = create_distance_martix(sketches) 
 
-print("Distance matrix: ", "\n", dist_matrix,"\n", "Genomde IDs: ", "\n", genome_ids)
+# print("Distance matrix: ", "\n", dist_matrix,"\n", "Genomde IDs: ", "\n", genome_ids)  
 
-averageDistancesToAllOtherNodes = computeAverageDistances(dist_matrix)
-print("average Distances: ", averageDistancesToAllOtherNodes)
-print("Found root: ", findRoot(averageDistancesToAllOtherNodes, genome_ids))
-
+# we now want to look what happens when we send m towards infinity, what is the link between m and th convergence rate of the distance? 

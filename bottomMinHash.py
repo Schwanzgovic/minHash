@@ -63,7 +63,7 @@ def create_distance_martix(sketches):
     
 #Solves problem 1    
 # 1. read all genomes from FASTA-file
-genomes = {rec.id: str(rec.seq) for rec in SeqIO.parse("test3.fa", "fasta")} #change "test3.fa" to wanted file
+genomes = {rec.id: str(rec.seq) for rec in SeqIO.parse("ecoli_20_genomes_short_acc.fa", "fasta")} #change "test3.fa" to wanted file
 
 # 2. choose parameters
 k = 21  # standard for bacteria (i googled, but we might want to play around with it and find a justification)
