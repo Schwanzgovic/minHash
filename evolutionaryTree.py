@@ -1,3 +1,10 @@
+# TODO
+# explain good k
+# explain choice of m - with our function we cannot have m>100 on real data because it is too slow. Is this a problem?
+# algorithm to find evolutionary tree - and make it in code
+# clean up the code and add clearifying comments
+# write the report
+
 import hashlib
 from Bio import SeqIO
 import zlib
@@ -67,26 +74,6 @@ def create_distance_martix(sketches):
             matrix[j,i] = dist
     return matrix, genome_ids
 
-# find the root of the tree 
-# the idea is to take the avergae distance to all other nodes. The root should have the shortest one
-# this function returns the id of the genome which most likely is the root 
-def findRoot(averageDistances, genomeIDs):
-     # get minimal index 
-     minIndex = np.argmin(averageDistances)
-     return genomeIDs[minIndex]
-
-
-# function to compute the average distances between each genome and all others
-def computeAverageDistances(dist_matrix):
-    n = len(dist_matrix[0][:])
-    averageDistances = np.zeros(n)
-    for i in range(n): 
-        sum = 0
-        for j in range(n):
-            if i!=j:
-                sum += dist_matrix[i][j]
-        averageDistances[i] = sum/(n-1)
-    return averageDistances
     
 #Solves problem 1    
 # 1. read all genomes from FASTA-file
@@ -112,4 +99,33 @@ print("Distance matrix: ", "\n", dist_matrix,"\n", "Genomde IDs: ", "\n", genome
 averageDistancesToAllOtherNodes = computeAverageDistances(dist_matrix)
 print("average Distances: ", averageDistancesToAllOtherNodes)
 print("Found root: ", findRoot(averageDistancesToAllOtherNodes, genome_ids))
+
+
+
+
+# PROBLEM 2
+
+# find the root of the tree 
+# the idea is to take the avergae distance to all other nodes. The root should have the shortest one
+# this function returns the id of the genome which most likely is the root 
+def findRoot(averageDistances, genomeIDs):
+     # get minimal index 
+     minIndex = np.argmin(averageDistances)
+     return genomeIDs[minIndex]
+
+
+# function to compute the average distances between each genome and all others
+def computeAverageDistances(dist_matrix):
+    n = len(dist_matrix[0][:])
+    averageDistances = np.zeros(n)
+    for i in range(n): 
+        sum = 0
+        for j in range(n):
+            if i!=j:
+                sum += dist_matrix[i][j]
+        averageDistances[i] = sum/(n-1)
+    return averageDistances
+
+
+
 
